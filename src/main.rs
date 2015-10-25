@@ -7,7 +7,7 @@ use std::fs::File;
 use std::io::Read;
 
 fn main() {
-    let order = 2;
+    let order = 5;
 
     // Read the text in
     let text = if let Ok(mut f) = File::open("text.txt") {
@@ -25,10 +25,15 @@ fn main() {
     let text_stats = TextStatistics::new_from_text(&text, order);
     
     // Create hilarious text
+    let target_word_count = 100;
     let mut words = Vec::new();
-    while words.len() <= 50 {
+    while words.len() < target_word_count {
+        let lerp_order = {
+            let temp = (target_word_count as u32 - words.len() as u32) / (target_word_count as u32 / (order+1));
+            if order < temp {order} else {temp}
+        };
         let begin_i = {
-            let temp = (words.len() as i32) - (order as i32);
+            let temp = (words.len() as i32) - (lerp_order as i32);
             if 0 > temp { 0 } else { temp as usize }
         };
         let end_i = words.len();
@@ -37,6 +42,7 @@ fn main() {
         words.push(word);
     }
     
+    // Print hilarious text
     for word in words {
         print!("{} ", word);
     }
