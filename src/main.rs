@@ -7,6 +7,8 @@ use std::fs::File;
 use std::io::Read;
 
 fn main() {
+    let order = 2;
+
     // Read the text in
     let text = if let Ok(mut f) = File::open("text.txt") {
         let mut s = String::new();
@@ -20,23 +22,25 @@ fn main() {
     };
     
     // Build text statistics
-    let text_stats = TextStatistics::new(&text, 3);
+    let text_stats = TextStatistics::new_from_text(&text, order);
     
-    // Print hilarious text
-    let mut prev_word = text_stats.random_word();
-    print!("{} ", prev_word);
-    for _ in 0..50 {
-        if let Some(word) = text_stats.random_word_from_word(prev_word) {
-            prev_word = word;
-            print!("{} ", prev_word);
-        }
-        else {
-            prev_word = text_stats.random_word();
-            print!("{} ", prev_word);
-        }
+    // Create hilarious text
+    let mut words = Vec::new();
+    while words.len() <= 50 {
+        let begin_i = {
+            let temp = (words.len() as i32) - (order as i32);
+            if 0 > temp { 0 } else { temp as usize }
+        };
+        let end_i = words.len();
+        
+        let word = text_stats.random_word_from_word_list_graceful(&words[begin_i..end_i]);
+        words.push(word);
     }
     
-    print!("\n\n");
+    for word in words {
+        print!("{} ", word);
+    }
+    print!("\n");
 }
 
 
