@@ -25,7 +25,7 @@ fn main() {
     let text_stats = TextStatistics::new_from_text(&text, order);
     
     // Create hilarious text
-    let target_word_count = 100;
+    let target_word_count = 150;
     let mut words = Vec::new();
     while words.len() < target_word_count {
         let lerp_order = {
@@ -43,10 +43,11 @@ fn main() {
     }
     
     // Print hilarious text
+    print!("\n");
     for word in words {
         print!("{} ", word);
     }
-    print!("\n");
+    print!("\n\n");
 }
 
 
