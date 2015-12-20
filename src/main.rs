@@ -1,53 +1,47 @@
 extern crate rand;
+extern crate regex;
 
-mod text_statistics;
-use text_statistics::TextStatistics;
+mod stats;
 
 use std::fs::File;
 use std::io::Read;
+use std::collections::VecDeque;
+
+use regex::Regex;
+
+use stats::MarkovStats;
 
 fn main() {
-    let order = 5;
-
-    // Read the text in
-    let text = if let Ok(mut f) = File::open("text.txt") {
-        let mut s = String::new();
-        if let Err(_) = f.read_to_string(&mut s) {
-            panic!("text.txt does not contain valid UTF-8 text.");
-        }
-        s
-    }
-    else {
-        panic!("Could not open text.txt");
+    // Read input text to a string
+    let text = {
+        let mut text = String::new();
+        let _ = File::open("text.txt").unwrap().read_to_string(&mut text);
+        Regex::new(r"(?P<a>[^\n])\n(?P<b>[^\n])").unwrap().replace_all(&text, "$a $b")
     };
-    
-    // Build text statistics
-    let text_stats = TextStatistics::new_from_text(&text, order);
-    
-    // Create hilarious text
-    let target_word_count = 150;
-    let mut words = Vec::new();
-    while words.len() < target_word_count {
-        let lerp_order = {
-            let temp = (target_word_count as u32 - words.len() as u32) / (target_word_count as u32 / (order+1));
-            if order < temp {order} else {temp}
-        };
-        let begin_i = {
-            let temp = (words.len() as i32) - (lerp_order as i32);
-            if 0 > temp { 0 } else { temp as usize }
-        };
-        let end_i = words.len();
-        
-        let word = text_stats.random_word_from_word_list_graceful(&words[begin_i..end_i]);
-        words.push(word);
+
+    // Generate statistics
+    const MAX_ORD: usize = 6;
+    let stats = MarkovStats::from_str(&text, MAX_ORD);
+
+    // Generate hilarious text
+    let mut gen_text = String::new();
+    let mut window = VecDeque::new();
+    window.push_back(0);
+    for _ in 0..500 {
+        if let Some(c) = stats.markov_char(&gen_text[window[0]..]) {
+            gen_text.push(c);
+        } else {
+            gen_text.push(stats.random_char());
+            while window.len() > 1 {
+                window.pop_front();
+            }
+        }
+
+        window.push_back(gen_text.len());
+        if window.len() > (MAX_ORD + 1) {
+            window.pop_front();
+        }
     }
-    
-    // Print hilarious text
-    print!("\n");
-    for word in words {
-        print!("{} ", word);
-    }
-    print!("\n\n");
+
+    println!("{}", gen_text);
 }
-
-
