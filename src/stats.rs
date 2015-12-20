@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::collections::VecDeque;
+use std::cell::Cell;
 
 use rand::random;
 
@@ -8,6 +9,7 @@ pub struct MarkovStats<'a> {
     text: &'a str,
     stats: HashMap<&'a str, HashMap<char, u32>>,
     max_ord: usize,
+    cache_index: Cell<usize>,
 }
 
 const MAX_ORDER: usize = 1000;
@@ -53,6 +55,7 @@ impl<'a> MarkovStats<'a> {
             text: text,
             stats: stats,
             max_ord: max_order,
+            cache_index: Cell::new(0),
         }
     }
 
@@ -80,21 +83,25 @@ impl<'a> MarkovStats<'a> {
                 }
             }
             unreachable!()
+        } else if let Some(c) = self.find_unique(key, self.cache_index.get()) {
+            return Some(c);
         } else {
-            return self.find_unique(key);
+            return self.find_unique(key, 0);
         }
     }
 
-    fn find_unique(&self, key: &str) -> Option<char> {
+    fn find_unique(&self, key: &str, start_byte: usize) -> Option<char> {
         let char_count = key.chars().count();
+        let text = &self.text[start_byte..];
 
         let mut window = VecDeque::new();
-        for (i, c) in self.text.char_indices() {
+        for (i, c) in text.char_indices() {
             // Move sliding window
             window.push_back(i);
             if window.len() == (char_count + 1) {
-                let s = &self.text[*window.front().unwrap()..*window.back().unwrap()];
+                let s = &text[*window.front().unwrap()..*window.back().unwrap()];
                 if key == s {
+                    self.cache_index.set(start_byte + *window.front().unwrap());
                     return Some(c);
                 }
                 window.pop_front();

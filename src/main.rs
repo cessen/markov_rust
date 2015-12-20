@@ -30,7 +30,7 @@ fn main() {
     let mut gen_text = String::new();
     let mut window = VecDeque::new();
     window.push_back(0);
-    for _ in 0..500 {
+    for _ in 0..5000 {
         if let Some(c) = stats.markov_char(&gen_text[window[0]..]) {
             gen_text.push(c);
         } else {
