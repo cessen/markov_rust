@@ -12,16 +12,19 @@ use regex::Regex;
 use stats::MarkovStats;
 
 fn main() {
-    // Read input text to a string
+    // Read input text to a string and collapse whitespace appropriately
     let text = {
         let mut text = String::new();
         let _ = File::open("text.txt").unwrap().read_to_string(&mut text);
-        Regex::new(r"(?P<a>[^\n])\n(?P<b>[^\n])").unwrap().replace_all(&text, "$a $b")
+        text = Regex::new(r"(?P<a>[^\n])\n(?P<b>[^\n])").unwrap().replace_all(&text, "$a $b");
+        text = Regex::new(r" +").unwrap().replace_all(&text, " ");
+        text
     };
 
     // Generate statistics
-    const MAX_ORD: usize = 6;
-    let stats = MarkovStats::from_str(&text, MAX_ORD);
+    println!("Generating statistics... ");
+    let stats = MarkovStats::from_str(&text);
+    println!("done.\nMax order {}.\n", stats.max_order());
 
     // Generate hilarious text
     let mut gen_text = String::new();
@@ -38,10 +41,11 @@ fn main() {
         }
 
         window.push_back(gen_text.len());
-        if window.len() > (MAX_ORD + 1) {
+        if window.len() > 20 {
             window.pop_front();
         }
     }
 
+    // println!("{:#?}", stats);
     println!("{}", gen_text);
 }
