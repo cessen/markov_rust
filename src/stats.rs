@@ -15,6 +15,7 @@ pub struct MarkovStats<'a> {
 const MAX_ORDER: usize = 1000;
 
 impl<'a> MarkovStats<'a> {
+    /// Creates markov chain statistics from a string.
     pub fn from_str(text: &'a str) -> MarkovStats<'a> {
         let mut stats = HashMap::new();
         let mut max_order = 0;
@@ -59,15 +60,22 @@ impl<'a> MarkovStats<'a> {
         }
     }
 
+    /// Returns the maximum order of the stats where there is still
+    /// more than one choice for any given query.
     pub fn max_order(&self) -> usize {
         self.max_ord
     }
 
+    /// Returns a random char from the source text.
+    /// This is fairly inefficient because it scans the whole
+    /// text for the random char.
     pub fn random_char(&self) -> char {
-        let n = random::<usize>() % self.stats.len();
-        self.stats.keys().nth(n).unwrap().chars().nth(0).unwrap()
+        let n = random::<usize>() % self.text.chars().count();
+        self.text.chars().nth(n).unwrap()
     }
 
+    /// Returns a char that might follow the given text key.
+    /// If the text key doesn't exist in the stats, returns None.
     pub fn markov_char(&self, key: &str) -> Option<char> {
         if key.chars().count() == 0 {
             return None;

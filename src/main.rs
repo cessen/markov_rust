@@ -46,6 +46,5 @@ fn main() {
         }
     }
 
-    // println!("{:#?}", stats);
     println!("{}", gen_text);
 }
