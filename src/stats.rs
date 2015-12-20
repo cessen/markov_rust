@@ -21,13 +21,13 @@ impl<'a> MarkovStats<'a> {
         let mut max_order = 0;
         let mut ord_stats = HashMap::new();
         let mut window = VecDeque::new();
-        for ord in 1..MAX_ORDER {
+        for ord in 0..MAX_ORDER {
             window.clear();
             for (i, c) in text.char_indices() {
                 window.push_back(i);
                 if window.len() == (ord + 1) {
                     let s = &text[*window.front().unwrap()..*window.back().unwrap()];
-                    if ord == 1 || stats.contains_key(&s[1..]) {
+                    if ord == 0 || stats.contains_key(&s[1..]) {
                         *ord_stats.entry(s)
                                   .or_insert_with(|| HashMap::new())
                                   .entry(c)
@@ -67,20 +67,13 @@ impl<'a> MarkovStats<'a> {
     }
 
     /// Returns a random char from the source text.
-    /// This is fairly inefficient because it scans the whole
-    /// text for the random char.
     pub fn random_char(&self) -> char {
-        let n = random::<usize>() % self.text.chars().count();
-        self.text.chars().nth(n).unwrap()
+        self.markov_char("").unwrap()
     }
 
     /// Returns a char that might follow the given text key.
     /// If the text key doesn't exist in the stats, returns None.
     pub fn markov_char(&self, key: &str) -> Option<char> {
-        if key.chars().count() == 0 {
-            return None;
-        }
-
         if let Some(substats) = self.stats.get(key) {
             let n = random::<usize>() % (substats.values().fold(0, |acc, n| acc + *n) as usize);
             let mut i = 0;
