@@ -19,21 +19,18 @@ impl<'a> MarkovStats<'a> {
     pub fn from_str(text: &'a str) -> MarkovStats<'a> {
         let mut stats = HashMap::new();
         let mut max_order = 0;
-        let mut ord_stats = HashMap::new();
-        let mut window = VecDeque::new();
+
         for ord in 0..MAX_ORDER {
-            window.clear();
-            for (i, c) in text.char_indices() {
-                window.push_back(i);
-                if window.len() == (ord + 1) {
-                    let s = &text[*window.front().unwrap()..*window.back().unwrap()];
-                    if ord == 0 || stats.contains_key(&s[1..]) {
-                        *ord_stats.entry(s)
-                                  .or_insert_with(|| HashMap::new())
-                                  .entry(c)
-                                  .or_insert(0) += 1;
-                    }
-                    window.pop_front();
+            // Build the stats for this order
+            let mut ord_stats = HashMap::new();
+            for ((i1, _), (i2, c)) in Iterator::zip(text.char_indices(),
+                                                    text.char_indices().skip(ord)) {
+                let s = &text[i1..i2];
+                if ord == 0 || stats.contains_key(&s[1..]) {
+                    *ord_stats.entry(s)
+                              .or_insert_with(|| HashMap::new())
+                              .entry(c)
+                              .or_insert(0) += 1;
                 }
             }
 
@@ -45,11 +42,14 @@ impl<'a> MarkovStats<'a> {
                     merge_count += 1;
                 }
             }
+
+            // If there were no stats to be merged, then there can't
+            // be any stats needed from the higher orders either.
+            // So stop.
             if merge_count == 0 {
                 max_order = ord - 1;
                 break;
             }
-            ord_stats.clear();
         }
 
         MarkovStats {
