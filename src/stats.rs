@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::collections::VecDeque;
 use std::cell::Cell;
 
 use rand::random;
@@ -95,17 +94,11 @@ impl<'a> MarkovStats<'a> {
         let char_count = key.chars().count();
         let text = &self.text[start_byte..];
 
-        let mut window = VecDeque::new();
-        for (i, c) in text.char_indices() {
-            // Move sliding window
-            window.push_back(i);
-            if window.len() == (char_count + 1) {
-                let s = &text[*window.front().unwrap()..*window.back().unwrap()];
-                if key == s {
-                    self.cache_index.set(start_byte + *window.front().unwrap());
-                    return Some(c);
-                }
-                window.pop_front();
+        for ((i1, _), (i2, c)) in Iterator::zip(text.char_indices(),
+                                                text.char_indices().skip(char_count)) {
+            if key == &text[i1..i2] {
+                self.cache_index.set(start_byte + i1);
+                return Some(c);
             }
         }
 
