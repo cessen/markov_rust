@@ -35,9 +35,9 @@ impl<'a> MarkovStats<'a> {
 
             // Merge into main stats
             let mut merge_count = 0;
-            for (k, v) in ord_stats.iter() {
+            for (k, v) in ord_stats.into_iter() {
                 if v.len() > 1 {
-                    stats.insert(*k, v.clone());
+                    stats.insert(k, v);
                     merge_count += 1;
                 }
             }
