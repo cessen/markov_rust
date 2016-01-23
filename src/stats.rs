@@ -17,11 +17,11 @@ impl<'a> MarkovStats<'a> {
     /// Creates markov chain statistics from a string.
     pub fn from_str(text: &'a str) -> MarkovStats<'a> {
         let mut stats = HashMap::new();
+        let mut ord_stats = HashMap::new();
         let mut max_order = 0;
 
         for ord in 0..MAX_ORDER {
             // Build the stats for this order
-            let mut ord_stats = HashMap::new();
             for ((i1, _), (i2, c)) in Iterator::zip(text.char_indices(),
                                                     text.char_indices().skip(ord)) {
                 let s = &text[i1..i2];
@@ -35,12 +35,14 @@ impl<'a> MarkovStats<'a> {
 
             // Merge into main stats
             let mut merge_count = 0;
-            for (k, v) in ord_stats.into_iter() {
+            for (k, v) in ord_stats.drain() {
                 if v.len() > 1 {
                     stats.insert(k, v);
                     merge_count += 1;
                 }
             }
+
+            // println!("{}", merge_count);
 
             // If there were no stats to be merged, then there can't
             // be any stats needed from the higher orders either.
