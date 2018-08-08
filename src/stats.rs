@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use std::cell::Cell;
+use std::collections::HashMap;
 
 use rand::random;
 
@@ -22,14 +22,16 @@ impl<'a> MarkovStats<'a> {
 
         for ord in 0..(max_order + 1) {
             // Build the stats for this order
-            for ((i1, _), (i2, c)) in Iterator::zip(text.char_indices(),
-                                                    text.char_indices().skip(ord)) {
+            for ((i1, _), (i2, c)) in
+                Iterator::zip(text.char_indices(), text.char_indices().skip(ord))
+            {
                 let s = &text[i1..i2];
                 if ord == 0 || stats.contains_key(&s[1..]) {
-                    *ord_stats.entry(s)
-                              .or_insert_with(|| HashMap::new())
-                              .entry(c)
-                              .or_insert(0) += 1;
+                    *ord_stats
+                        .entry(s)
+                        .or_insert_with(|| HashMap::new())
+                        .entry(c)
+                        .or_insert(0) += 1;
                 }
             }
 
@@ -96,8 +98,9 @@ impl<'a> MarkovStats<'a> {
         let char_count = key.chars().count();
         let text = &self.text[start_byte..];
 
-        for ((i1, _), (i2, c)) in Iterator::zip(text.char_indices(),
-                                                text.char_indices().skip(char_count)) {
+        for ((i1, _), (i2, c)) in
+            Iterator::zip(text.char_indices(), text.char_indices().skip(char_count))
+        {
             if key == &text[i1..i2] {
                 self.cache_index.set(start_byte + i1);
                 return Some(c);

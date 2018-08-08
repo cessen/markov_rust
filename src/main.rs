@@ -1,20 +1,19 @@
+extern crate docopt;
 extern crate rand;
 extern crate regex;
-extern crate docopt;
 extern crate rustc_serialize;
 
 mod stats;
 
+use std::collections::VecDeque;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
-use std::collections::VecDeque;
 
-use regex::Regex;
 use docopt::Docopt;
+use regex::Regex;
 
 use stats::MarkovStats;
-
 
 const USAGE: &'static str = r"
 Markov Chain Text Generator
@@ -39,12 +38,11 @@ struct Args {
     flag_length: Option<usize>,
 }
 
-
 fn main() {
     // Parse command line arguments
     let args: Args = Docopt::new(USAGE)
-                         .and_then(|d| d.decode())
-                         .unwrap_or_else(|e| e.exit());
+        .and_then(|d| d.decode())
+        .unwrap_or_else(|e| e.exit());
 
     let order = {
         if let Some(order) = args.flag_order {
@@ -65,8 +63,12 @@ fn main() {
     // Read input text to a string and collapse whitespace appropriately
     let text = {
         let mut text = String::new();
-        let _ = File::open(&args.arg_input).unwrap().read_to_string(&mut text);
-        text = Regex::new(r"(?P<a>[^\n])\n(?P<b>[^\n])").unwrap().replace_all(&text, "$a $b");
+        let _ = File::open(&args.arg_input)
+            .unwrap()
+            .read_to_string(&mut text);
+        text = Regex::new(r"(?P<a>[^\n])\n(?P<b>[^\n])")
+            .unwrap()
+            .replace_all(&text, "$a $b");
         text = Regex::new(r" +").unwrap().replace_all(&text, " ");
         text
     };
