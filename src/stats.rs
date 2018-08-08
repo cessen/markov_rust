@@ -15,12 +15,12 @@ const MAX_ORDER: usize = 1000;
 
 impl<'a> MarkovStats<'a> {
     /// Creates markov chain statistics from a string.
-    pub fn from_str(text: &'a str) -> MarkovStats<'a> {
+    pub fn from_str(text: &'a str, max_ord: usize) -> MarkovStats<'a> {
         let mut stats = HashMap::new();
         let mut ord_stats = HashMap::new();
-        let mut max_order = 0;
+        let mut max_order = MAX_ORDER.min(max_ord);
 
-        for ord in 0..MAX_ORDER {
+        for ord in 0..(max_order + 1) {
             // Build the stats for this order
             for ((i1, _), (i2, c)) in Iterator::zip(text.char_indices(),
                                                     text.char_indices().skip(ord)) {

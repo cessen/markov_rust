@@ -73,7 +73,7 @@ fn main() {
 
     // Build statistics
     println!("Building statistics... ");
-    let stats = MarkovStats::from_str(&text);
+    let stats = MarkovStats::from_str(&text, order);
     println!("done.\nMax order {}.", stats.max_order());
     if let None = args.arg_output {
         println!("----------------");
